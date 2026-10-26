@@ -1,0 +1,6 @@
+@FaintAlertAPI_HostAddress = http://localhost:5043
+
+GET {{FaintAlertAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

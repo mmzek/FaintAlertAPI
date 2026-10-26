@@ -1,0 +1,86 @@
+# Build output
+[Bb]in/
+[Oo]bj/
+[Dd]ebug/
+[Rr]elease/
+[Aa]rtifacts/
+
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Visual Studio Code
+.vscode/
+
+# JetBrains Rider / ReSharper
+.idea/
+_ReSharper*/
+*.DotSettings.user
+
+# Test results and coverage
+TestResults/
+[Tt]est[Rr]esult*/
+*.trx
+coverage/
+coverage*.json
+*.coverage
+*.coveragexml
+
+# NuGet and package output
+packages/
+*.nupkg
+*.snupkg
+.nuget/
+
+# Generated files
+GeneratedFiles/
+*.generated.cs
+
+# Local configuration and secrets
+.env
+.env.*
+!.env.example
+appsettings.Local.json
+appsettings.*.local.json
+
+# Local databases and logs
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.log
+logs/
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ASP.NET development certificates
+*.pfx
+
+# Publish output
+publish/
+*.publishsettings
+
+# Azure Functions local settings
+local.settings.json
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
