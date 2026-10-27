@@ -1,77 +1,96 @@
-﻿using FaintAlertAPI.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using FaintAlertAPI.Data;
 
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-
-namespace FaintAlertAPI.Controllers
+[Route("api/[controller]")]
+[ApiController]
+public class UsersController(FaintAlertDbContext context) : ControllerBase
 {
-    [Route("api/[controller]")]
-    [ApiController]
-    public class UsersController : ControllerBase
+
+    // GET: api/User
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<User>>> GetUser()
     {
-        private static List<User> users = new List<User>
-        {
-            new User { Id = 1, Name = "John Doe", Email = "john.doe@example.com", Password = "password123" },
-            new User { Id = 2, Name = "Jane Smith", Email = "jane.smith@example.com", Password = "password456" }
-        };
+        var users = await context.Users.ToListAsync();
+        return users;
+    }
 
-        // GET: api/<UsersController>
-        [HttpGet]
-        public ActionResult<IEnumerable<User>> Get()
+    // GET: api/User/5
+    [HttpGet("{id}")]
+    public async Task<ActionResult<User>> GetUser(System.Guid id)
+    {
+        var user = await context.Users
+            .Include(u => u.EmergencyContacts)
+            .FirstOrDefaultAsync(u => u.Id == id);
+
+        if (user == null)
         {
-            return Ok(users);
+            return NotFound();
         }
 
-        // GET api/<UsersController>/5
-        [HttpGet("{id}")]
-        public ActionResult<User> Get(int id)
+        return user;
+    }
+
+    // PUT: api/User/5
+    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [HttpPut("{id}")]
+    public async Task<IActionResult> PutUser(System.Guid? id, User user)
+    {
+        if (id != user.Id)
         {
-            var user = users.FirstOrDefault(u => u.Id == id);
-            if (user == null)
+            return BadRequest();
+        }
+
+        context.Entry(user).State = EntityState.Modified;
+
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            if (!await UserExistsAsync(id))
             {
                 return NotFound();
             }
-            return Ok(user);
+            else
+            {
+                throw;
+            }
         }
 
-        // POST api/<UserController>
-        [HttpPost]
-        public ActionResult<User> Post([FromBody] User newUser)
+        return NoContent();
+    }
+
+    // POST: api/User
+    // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
+    [HttpPost]
+    public async Task<ActionResult<User>> PostUser(User user)
+    {
+        context.Users.Add(user);
+        await context.SaveChangesAsync();
+
+        return CreatedAtAction("GetUser", new { id = user.Id }, user);
+    }
+
+    // DELETE: api/User/5
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteUser(System.Guid? id)
+    {
+        var user = await context.Users.FindAsync(id);
+        if (user == null)
         {
-            if(users.Any(h => h.Id == newUser.Id))
-            {
-                return Conflict("User with the same ID already exists.");
-            }
-            users.Add(newUser);
-            return CreatedAtAction(nameof(Get), new { id = newUser.Id }, newUser);
+            return NotFound();
         }
 
-        // PUT api/<UsersController>/5
-        [HttpPut("{id}")]
-        public ActionResult Put(int id, [FromBody] User updatedUser)
-        {
-            var user = users.FirstOrDefault(u => u.Id == id);
-            if (user == null)
-            {
-                return NotFound();
-            }
-            user.Name = updatedUser.Name;
-            user.Email = updatedUser.Email;
-            user.Password = updatedUser.Password;
-            return NoContent();
-        }
+        context.Users.Remove(user);
+        await context.SaveChangesAsync();
 
-        // DELETE api/<UsersController>/5
-        [HttpDelete("{id}")]
-        public ActionResult Delete(int id)
-        {
-            var user = users.FirstOrDefault(u => u.Id == id);
-            if (user == null)
-            {
-                return NotFound(new { Message = "User not found." });
-            }
-            users.Remove(user);
-            return NoContent();
-        }
+        return NoContent();
+    }
+
+    private async Task<bool> UserExistsAsync(System.Guid? id)
+    {
+        return await context.Users.AnyAsync(e => e.Id == id);
     }
 }

@@ -1,10 +1,10 @@
-﻿namespace FaintAlertAPI.Data
+﻿namespace FaintAlertAPI.Data;
+
+public class User
 {
-    public class User
-    {
-        public int Id { get; set; }
-        public string Name { get; set; }
-        public string  Email { get; set; }
-        public string Password { get; set; }
-    }
+    public Guid Id { get; set; }
+    public string Name { get; set; }
+    public string  Email { get; set; }
+    public string Password { get; set; }
+    public IList<EmergencyContact> EmergencyContacts { get; set; } = new List<EmergencyContact>();
 }
