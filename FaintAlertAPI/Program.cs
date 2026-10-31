@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using FaintAlertAPI.Contracts;
 using FaintAlertAPI.MappingProfiles;
 using FaintAlertAPI.Services;
+using Microsoft.AspNetCore.Identity;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,11 +17,11 @@ builder.Services.Configure<RouteOptions>(options =>
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 builder.Services.AddDbContext<FaintAlertDbContext>(options =>
     options.UseNpgsql(connectionString));
+builder.Services.AddIdentityApiEndpoints<User>().AddEntityFrameworkStores<FaintAlertDbContext>();
+builder.Services.AddAuthorization();
 
-builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IEmergencyContactsService, EmergencyContactsService>();
 builder.Services.AddAutoMapper(c => {c.AddProfile<EmergencyContactMappingProfile>(); 
-    c.AddProfile<UserMappingProfile>(); 
 });
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
@@ -31,6 +32,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddOpenApi();
 
 var app = builder.Build();
+app.MapGroup("api/auth").MapIdentityApi<User>();
+
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
