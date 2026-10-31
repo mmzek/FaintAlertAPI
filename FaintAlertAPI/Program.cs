@@ -1,6 +1,9 @@
 using FaintAlertAPI.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Routing;
+using FaintAlertAPI.Contracts;
+using FaintAlertAPI.MappingProfiles;
+using FaintAlertAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +17,11 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<FaintAlertDbContext>(options =>
     options.UseNpgsql(connectionString));
 
+builder.Services.AddScoped<IUsersService, UsersService>();
+builder.Services.AddScoped<IEmergencyContactsService, EmergencyContactsService>();
+builder.Services.AddAutoMapper(c => {c.AddProfile<EmergencyContactMappingProfile>(); 
+    c.AddProfile<UserMappingProfile>(); 
+});
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
