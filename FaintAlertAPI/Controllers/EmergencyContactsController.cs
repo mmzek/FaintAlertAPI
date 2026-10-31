@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FaintAlertAPI.Data;
+using FaintAlertAPI.DTOs.EmergencyContact;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -9,18 +10,34 @@ public class EmergencyContactsController(FaintAlertDbContext context) : Controll
 
     // GET: api/EmergencyContact
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<EmergencyContact>>> GetEmergencyContact()
+    public async Task<ActionResult<IEnumerable<GetEmergencyContactsDto>>> GetEmergencyContact()
     {
-        return await context.EmergencyContacts.ToListAsync();
+        var emergencyContacts = await context.EmergencyContacts
+            .Select(e => new GetEmergencyContactsDto(
+                e.Id,
+                e.Name,
+                e.Email,
+                e.Phone,
+                e.UserId
+            ))
+            .ToListAsync();
+        return Ok(emergencyContacts);
     }
 
     // GET: api/EmergencyContact/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<EmergencyContact>> GetEmergencyContact(System.Guid id)
+    public async Task<ActionResult<GetEmergencyContactDto>> GetEmergencyContact(System.Guid id)
     {
         var emergencycontact = await context.EmergencyContacts
-            .Include(e => e.User)
-            .FirstOrDefaultAsync(e => e.Id == id);
+            .Where(e => e.Id == id)
+            .Select(e => new GetEmergencyContactDto(
+                e.Id,
+                e.Name,
+                e.Email,
+                e.Phone,
+                e.User!.Name
+            ))
+            .FirstOrDefaultAsync();
 
         if (emergencycontact == null)
         {
@@ -33,14 +50,24 @@ public class EmergencyContactsController(FaintAlertDbContext context) : Controll
     // PUT: api/EmergencyContact/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutEmergencyContact(System.Guid? id, EmergencyContact emergencycontact)
+    public async Task<IActionResult> PutEmergencyContact(System.Guid? id, UpdateEmergencyContactDto emergencycontactDto)
     {
-        if (id != emergencycontact.Id)
+        if (id != emergencycontactDto.Id)
         {
             return BadRequest();
         }
 
-        context.Entry(emergencycontact).State = EntityState.Modified;
+        var emergency = await context.EmergencyContacts.FindAsync(id);
+        if (emergency == null)
+        {
+            return NotFound();
+        }
+
+        emergency.Name = emergencycontactDto.Name;
+        emergency.Email = emergencycontactDto.Email;
+        emergency.Phone = emergencycontactDto.Phone;
+
+        context.Entry(emergency).State = EntityState.Modified;
 
         try
         {
@@ -64,8 +91,17 @@ public class EmergencyContactsController(FaintAlertDbContext context) : Controll
     // POST: api/EmergencyContact
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<EmergencyContact>> PostEmergencyContact(EmergencyContact emergencycontact)
+    public async Task<ActionResult<EmergencyContact>> PostEmergencyContact(CreateEmergencyContactDto emergencycontactDto)
     {
+        var emergencycontact = new EmergencyContact
+        {
+            Id = Guid.NewGuid(),
+            Name = emergencycontactDto.Name,
+            Email = emergencycontactDto.Email,
+            Phone = emergencycontactDto.Phone,
+            UserId = emergencycontactDto.UserId
+        };
+
         context.EmergencyContacts.Add(emergencycontact);
         await context.SaveChangesAsync();
 

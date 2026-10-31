@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using FaintAlertAPI.Data;
+using FaintAlertAPI.DTOs.User;
 
 [Route("api/[controller]")]
 [ApiController]
@@ -9,37 +10,53 @@ public class UsersController(FaintAlertDbContext context) : ControllerBase
 
     // GET: api/User
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<User>>> GetUser()
+    public async Task<ActionResult<IEnumerable<GetUsersDto>>> GetUser()
     {
-        var users = await context.Users.ToListAsync();
-        return users;
+        var users = await context.Users
+            .Select(u => new GetUsersDto(
+                u.Id, 
+                u.Name, 
+                u.Email))
+            .ToListAsync();
+        return Ok(users);
     }
 
     // GET: api/User/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<User>> GetUser(System.Guid id)
+    public async Task<ActionResult<GetUserDto>> GetUser(System.Guid id)
     {
         var user = await context.Users
-            .Include(u => u.EmergencyContacts)
-            .FirstOrDefaultAsync(u => u.Id == id);
+            .Where(u => u.Id == id)
+            .Select(u => new GetUsersDto(u.Id, u.Name, u.Email))
+            .FirstOrDefaultAsync();
 
         if (user == null)
         {
             return NotFound();
         }
 
-        return user;
+        return Ok(user);
     }
 
     // PUT: api/User/5
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPut("{id}")]
-    public async Task<IActionResult> PutUser(System.Guid? id, User user)
+    public async Task<IActionResult> PutUser(System.Guid? id,UpdateUserDto userDto)
     {
-        if (id != user.Id)
+        if (id != userDto.Id)
         {
             return BadRequest();
         }
+
+        var user = await context.Users.FindAsync(id);
+        if (user == null)
+        {
+            return NotFound();
+        }
+
+        user.Name = userDto.Name;
+        user.Email = userDto.Email;
+        user.Password = userDto.Password;
 
         context.Entry(user).State = EntityState.Modified;
 
@@ -65,8 +82,16 @@ public class UsersController(FaintAlertDbContext context) : ControllerBase
     // POST: api/User
     // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
     [HttpPost]
-    public async Task<ActionResult<User>> PostUser(User user)
+    public async Task<ActionResult<User>> PostUser(CreateUserDto userDto)
     {
+        var user = new User
+        {
+            Id = Guid.NewGuid(),
+            Name = userDto.Name,
+            Email = userDto.Email,
+            Password = userDto.Password
+        };
+
         context.Users.Add(user);
         await context.SaveChangesAsync();
 

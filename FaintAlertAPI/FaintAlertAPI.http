@@ -1,6 +1,77 @@
 @FaintAlertAPI_HostAddress = http://localhost:5043
+@UserId = 00000000-0000-0000-0000-000000000001
+@EmergencyContactId = 00000000-0000-0000-0000-000000000002
 
-GET {{FaintAlertAPI_HostAddress}}/weatherforecast/
-Accept: application/json
+
+
+
+GET {{FaintAlertAPI_HostAddress}}/api/emergencycontacts
+
+###
+
+POST {{FaintAlertAPI_HostAddress}}/api/emergencycontacts
+Content-Type: application/json
+
+{
+  "Name": "Mama",
+  "Email": "mama@test.com",
+  "Phone": "12345678",
+  "UserId": "{{UserId}}"
+}
+
+###
+
+DELETE {{FaintAlertAPI_HostAddress}}/api/emergencycontacts/{{EmergencyContactId}}
+
+###
+
+GET {{FaintAlertAPI_HostAddress}}/api/emergencycontacts/{{EmergencyContactId}}
+
+###
+
+PUT {{FaintAlertAPI_HostAddress}}/api/emergencycontacts/{{EmergencyContactId}}
+Content-Type: application/json
+
+{
+  "Id": "{{EmergencyContactId}}",
+  "Name": "Mama",
+  "Email": "mama@test.com",
+  "Phone": "12345678"
+}
+
+###
+
+GET {{FaintAlertAPI_HostAddress}}/api/users
+
+###
+
+POST {{FaintAlertAPI_HostAddress}}/api/users
+Content-Type: application/json
+
+{
+  "Name": "John Doe",
+  "Email": "john.doe@test.com",
+  "Password": "securepassword"
+}
+
+###
+
+DELETE {{FaintAlertAPI_HostAddress}}/api/users/{{UserId}}
+
+###
+
+GET {{FaintAlertAPI_HostAddress}}/api/users/{{UserId}}
+
+###
+
+PUT {{FaintAlertAPI_HostAddress}}/api/users/{{UserId}}
+Content-Type: application/json
+
+{
+  "Id": "{{UserId}}",
+  "Name": "Jan Kowalski",
+  "Email": "jan@test.com",
+  "Password": "Haslo123!"
+}
 
 ###
